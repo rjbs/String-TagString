@@ -14,6 +14,12 @@ my @tagstrings = (
   [ 'foo baz: bar'       => { foo => undef, bar => undef, baz => ''       } ],
   [ 'bad()tag foo bar'   => undef ],
   [ 'bad:tag|value foo'  => undef ],
+
+  [ 'foo baz:"peanut butter" bar  '  => { foo => undef, bar => undef, baz => 'peanut butter' } ],
+  [ 'foo baz:"peanut\"butter" bar  ' => { foo => undef, bar => undef, baz => 'peanut"butter' } ],
+  [ '"peanut butter":chunky salty  ' => { q{peanut butter} => 'chunky', salty => undef } ],
+
+  [ 'foo baz:"peanut butter\" bar  '  => undef ],
 );
 
 for (@tagstrings) {
@@ -26,6 +32,8 @@ for (@tagstrings) {
     $expected_tags,
     "tags from <$string>" . (! defined $expected_tags ? ' (invalid)' : ''),
   );
+
+  diag explain $tags if defined $tags and ! defined $expected_tags;
 }
 
 my @tags = (
@@ -35,6 +43,7 @@ my @tags = (
   [ { foo => undef, bar => undef, baz => undef    } => 'bar baz foo'        ],
   [ { foo => undef, bar => undef, baz => ''       } => 'bar baz: foo'       ],
   [ { foo => undef, bar => undef, baz => 'peanut' } => 'bar baz:peanut foo' ],
+  [ { foo => undef, bar => "peanut butter"        } => 'bar:"peanut butter" foo' ],
 );
 
 for (@tags) {

@@ -11,8 +11,6 @@ Text::TagString - turn strings into tags and tags into strings
 
 version 0.01
 
- $Id$
-
 =cut
 
 our $VERSION = '0.01';
@@ -35,35 +33,6 @@ Quick summary of what the module does.
 
 =cut
 
-sub valid_tag {
-  my ($class, $tag) = @_;
-
-  return ($tag =~ /\A[@\pL\d_:.*][-\pL\d_:.*]*\z/) ? 1 : ();
-}
-
-sub valid_tag_value {
-  my ($class, $value) = @_;
-
-  return ($value =~ /\A[-\pL\d:_.*]*\z/) ? 1 : ();
-}
-
-=head2 tag_from_string
-
-=cut
-
-sub tag_from_string {
-  my ($class, $string) = @_;
-  my ($tag, $value) = split /:/, $_, 2;
-
-  Carp::carp "empty tag" unless $tag;
-
-  Carp::carp "invalid tag <$tag>" if ! $class->valid_tag($tag);
-
-  Carp::carp "invalid tag value <$value>" if ! $class->valid_tag_value($value);
-
-  return ($tag, $value);
-}
-
 =head2 tags_from_string
 
 =cut
@@ -75,35 +44,61 @@ sub tags_from_string {
 
   # remove leading and trailing spaces
   $tagstring =~ s/\A\s*//;
+  $tagstring =~ s/\s*\a//;
 
-  my %tags = map { (index($_, ':') > 0) ? split(/:/, $_, 2) : ($_ => undef) }
-                 split /(?:\+|\s)+/, $tagstring;
+  my $str_re = qr{(\pL+|"(.+?(?<!\\))")};
+  my $tag_re = qr{
+    (?:
+      (@)?        # $1 - possibly a @ on the tag name
+      $str_re     # $2 = whole match; $3 = quoted part
+    )
+    (             # $4 = entire value, with :
+      :
+      $str_re?    # $5 = whole match; $6 = quoted part
+    )?
+    (?:\s+|\z)    # end-of-string or some space
+  }x;
 
-  die "invalid characters in tagstring"
-    if grep { defined $_ and $_ !~ /\A[@\pL\d_:.*][-\pL\d_:.*]*\z/ } keys %tags;
-  die "invalid characters in tagstring"
-    if grep { defined $_ and $_ !~ /\A[-\pL\d:_.*]*\z/ } values %tags;
+  my %tag;
+  while ($tagstring =~ m{\G$tag_re}g) {
+    no warnings 'uninitialized';
+    my $tag   = defined $3 ? $3 : $2;
+    my $value = defined $6 ? $6 : $5;
+    $value = '' if ! defined $value and defined $4;
+    $value =~ s/\\"/"/g;
 
-  return \%tags;
+    $tag{ $tag } = $value;
+  }
+
+  die "invalid tagstring" unless keys %tag;
+
+  return \%tag;
 }
 
 =head2 string_from_tags
 
 =cut
 
+sub _qs {
+  return $_[0] if $_[0] !~ m{\PL};
+  my $str = $_[0];
+  $str =~ s/"/\\"/g;
+  return qq{"$str"};
+}
+
 sub string_from_tags {
   my ($class, $tags) = @_;
 
   return "" unless defined $tags;
 
-  Carp::carp "tagstring must be a hash or array reference"
+  Carp::carp("tagstring must be a hash or array reference")
     unless (ref $tags) and ((ref $tags eq 'HASH') or (ref $tags eq 'ARRAY'));
 
   $tags = { map { $_ => undef } @$tags } if ref $tags eq 'ARRAY';
 
   my $tagstring
     = join q{ },
-      map { "$_" . (defined $tags->{$_} ? ":$tags->{$_}" : '') }
+      map { _qs($_) . (defined $tags->{$_} ? (q{:} . _qs($tags->{$_})) : '') }
       sort keys %$tags;
 
   return $tagstring;
