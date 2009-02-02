@@ -1,7 +1,7 @@
 use Test::More tests => 1;
 
 BEGIN {
-  use_ok('Text::TagString');
+  use_ok('String::TagString');
 }
 
-diag( "Testing Text::TagString $Text::TagString::VERSION" );
+diag( "Testing String::TagString $String::TagString::VERSION" );

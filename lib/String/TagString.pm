@@ -1,11 +1,11 @@
-package Text::TagString;
+package String::TagString;
 
 use warnings;
 use strict;
 
 =head1 NAME
 
-Text::TagString - turn strings into tags and tags into strings
+String::TagString - turn strings into tags and tags into strings
 
 =head1 VERSION
 
@@ -17,13 +17,13 @@ our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
-  use Text::TagString;
+  use String::TagString;
 
-  my $tags = Text::TagString->tags_from_string($string);
+  my $tags = String::TagString->tags_from_string($string);
 
   # or
 
-  my $string = Text::TagString->string_from_tags($tags);
+  my $string = String::TagString->string_from_tags($tags);
 
 =head1 DESCRIPTION
 

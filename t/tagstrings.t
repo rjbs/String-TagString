@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Test::More 'no_plan';
-use Text::TagString;
+use String::TagString;
 
 my @tagstrings = (
   [ ''                   => {} ],
@@ -25,7 +25,7 @@ my @tagstrings = (
 for (@tagstrings) {
   my ($string, $expected_tags) = @$_;
 
-  my $tags = eval { Text::TagString->tags_from_string($string); };
+  my $tags = eval { String::TagString->tags_from_string($string); };
 
   is_deeply(
     $tags,
@@ -49,7 +49,7 @@ my @tags = (
 for (@tags) {
   my ($tags, $expected_string) = @$_;
 
-  my $string = eval { Text::TagString->string_from_tags($tags); };
+  my $string = eval { String::TagString->string_from_tags($tags); };
 
   is_deeply(
     $string,
