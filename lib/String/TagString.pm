@@ -1,28 +1,16 @@
-package String::TagString;
-
 use warnings;
 use strict;
-
-=head1 NAME
-
-String::TagString - turn strings into tags and tags into strings
-
-=head1 VERSION
-
-version 0.01
-
-=cut
-
-our $VERSION = '0.01';
+package String::TagString;
+# ABSTRACT - parse and emit tag strings (including tags with values)
 
 =head1 SYNOPSIS
 
   use String::TagString;
 
-  my $tags = String::TagString->tags_from_string($string);
+  # Parse a string into a set of tags:
+  my $tags   = String::TagString->tags_from_string($string);
 
-  # or
-
+  # Represent a set of tags as a string:
   my $string = String::TagString->string_from_tags($tags);
 
 =head1 DESCRIPTION
@@ -60,15 +48,18 @@ sub tags_from_string {
   }x;
 
   my %tag;
+  my $pos;
   while ($tagstring =~ m{\G$tag_re}g) {
-    no warnings 'uninitialized';
+    $pos = pos $tagstring;
     my $tag   = defined $3 ? $3 : $2;
     my $value = defined $6 ? $6 : $5;
     $value = '' if ! defined $value and defined $4;
-    $value =~ s/\\"/"/g;
+    $value =~ s/\\"/"/g if defined $value;
 
     $tag{ $tag } = $value;
   }
+  
+  die "invalid tagstring" unless defined $pos and $pos == length $tagstring;
 
   die "invalid tagstring" unless keys %tag;
 

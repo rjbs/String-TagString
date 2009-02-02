@@ -31,9 +31,7 @@ for (@tagstrings) {
     $tags,
     $expected_tags,
     "tags from <$string>" . (! defined $expected_tags ? ' (invalid)' : ''),
-  );
-
-  diag explain $tags if defined $tags and ! defined $expected_tags;
+  ) or diag explain $tags;
 }
 
 my @tags = (
