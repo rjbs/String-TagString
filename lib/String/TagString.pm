@@ -61,8 +61,6 @@ sub tags_from_string {
   
   die "invalid tagstring" unless defined $pos and $pos == length $tagstring;
 
-  die "invalid tagstring" unless keys %tag;
-
   return \%tag;
 }
 
