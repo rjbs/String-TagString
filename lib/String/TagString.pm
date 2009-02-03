@@ -25,6 +25,9 @@ Quick summary of what the module does.
 
 =cut
 
+sub _raw_tag_name_re  { qr{@?[\pL\d_.*][-\pL\d_.*]*} }
+sub _raw_tag_value_re { qr{[-\pL\d_.*]+} }
+
 sub tags_from_string {
   my ($class, $tagstring) = @_;
 
@@ -34,25 +37,16 @@ sub tags_from_string {
   $tagstring =~ s/\A\s*//;
   $tagstring =~ s/\s*\a//;
 
-  my $quoted_re = qr{ "( (?:\\\\|\\"|\\[^\\"]|[^\\"])+ )" }x;
+  my $quoted_re  = qr{ "( (?:\\\\|\\"|\\[^\\"]|[^\\"])+ )" }x;
+  my $raw_lhs_re = $class->_raw_tag_name_re;
+  my $raw_rhs_re = $class->_raw_tag_value_re;
 
   my $tag_re = qr{
-    (?:
-      (                           # $1 = whole match; $2 = quoted part
-        (?:@?\pL+)
-        |
-        $quoted_re
-      )
-    )
-    (                             # $3 = entire value, with :
-      :
-      (
-        (?:\pL+)
-        |
-        $quoted_re
-      )?                          # $4 = whole match; $5 = quoted part
+    (?: ( $raw_lhs_re | $quoted_re )) # $1 = whole match; $2 = quoted part
+    ( :                               # $3 = entire value, with :
+        ( $raw_rhs_re | $quoted_re )? # $4 = whole match; $5 = quoted part
     )?
-    (?:\+|\s+|\z)                 # end-of-string or some space or a +
+    (?:\+|\s+|\z)                     # end-of-string or some space or a +
   }x;
 
   my %tag;
@@ -108,8 +102,7 @@ Ricardo Signes, C<< <rjbs@cpan.org> >>
 
 =head1 BUGS
 
-Please report any bugs or feature requests to
-C<bug-text-tagstring@rt.cpan.org>, or through the web interface at
+Please report any bugs or feature requests through the web interface at
 L<http://rt.cpan.org>.  I will be notified, and then you'll automatically be
 notified of progress on your bug as I make changes.
 
