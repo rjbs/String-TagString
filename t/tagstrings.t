@@ -48,7 +48,9 @@ my @tags = (
   [ { foo => undef, bar => undef, baz => 'peanut' } => 'bar baz:peanut foo' ],
   [ { foo => undef, bar => "peanut butter"        } => 'bar:"peanut butter" foo' ],
 
-  [ { 'peanut"butter' => 'chunky' } => '"peanut\"butter":chunky' ],
+  [ { 'peanut"butter'   => 'chunky' } => '"peanut\"butter":chunky' ],
+  [ { 'peanut\"butter'  => 'chunky' } => '"peanut\\"butter":chunky' ],
+  [ { 'peanut butter\\' => 'chunky' } => '"peanut butter\\":chunky' ],
 );
 
 for (@tags) {

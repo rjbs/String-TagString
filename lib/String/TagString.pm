@@ -26,8 +26,8 @@ Quick summary of what the module does.
 
 =cut
 
-sub _raw_tag_name_re  { qr{@?[\pL\d_.*][-\pL\d_.*]*} }
-sub _raw_tag_value_re { qr{[-\pL\d_.*]+} }
+sub _raw_tag_name_re  { qr{@?(?:\pL|[\d_.*])(?:\pL|[-\d_.*])*} }
+sub _raw_tag_value_re { qr{(?:\pL|[-\d_.*])*} }
 
 sub tags_from_string {
   my ($class, $tagstring) = @_;
@@ -72,8 +72,11 @@ sub tags_from_string {
 =cut
 
 sub _qs {
-  return $_[0] if $_[0] !~ m{\PL};
-  my $str = $_[0];
+  my ($self, $type, $str) = @_;
+  my $method = "_raw_tag_$type\_re";
+  my $re     = $self->$method;
+  return $str if $str =~ m{\A$re\z};
+  $str =~ s/\\/\\\\/g;
   $str =~ s/"/\\"/g;
   return qq{"$str"};
 }
@@ -88,12 +91,15 @@ sub string_from_tags {
 
   $tags = { map { $_ => undef } @$tags } if ref $tags eq 'ARRAY';
 
-  my $tagstring
-    = join q{ },
-      map { _qs($_) . (defined $tags->{$_} ? (q{:} . _qs($tags->{$_})) : '') }
-      sort keys %$tags;
+  my @tags;
+  for my $name (sort keys %$tags) {
+    my $value = $tags->{$name};
+    push @tags, join q{:},
+      $class->_qs(name  => $name),
+      (defined $value ? $class->_qs(value => $value) : ());
+  }
 
-  return $tagstring;
+  return join q{ }, @tags;
 }
 
 
