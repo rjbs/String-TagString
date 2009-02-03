@@ -34,26 +34,30 @@ sub tags_from_string {
   $tagstring =~ s/\A\s*//;
   $tagstring =~ s/\s*\a//;
 
-  my $str_re = qr{(\pL+|"(.+?(?<!\\))")};
   my $tag_re = qr{
     (?:
-      (@)?        # $1 - possibly a @ on the tag name
-      $str_re     # $2 = whole match; $3 = quoted part
+      ((?:@?\pL+)|"(.+?(?<!\\))") # $1 = whole match; $2 = quoted part
     )
-    (             # $4 = entire value, with :
+    (                             # $3 = entire value, with :
       :
-      $str_re?    # $5 = whole match; $6 = quoted part
+      (
+        (?:\pL+)
+        |
+        "(
+          (?:\\\\|\\"|\\[^\\"]|[^\\"])+
+        )"
+      )?  # $4 = whole match; $5 = quoted part
     )?
-    (?:\s+|\z)    # end-of-string or some space
+    (?:\+|\s+|\z)    # end-of-string or some space or a plus sign
   }x;
 
   my %tag;
   my $pos;
   while ($tagstring =~ m{\G$tag_re}g) {
     $pos = pos $tagstring;
-    my $tag   = defined $3 ? $3 : $2;
-    my $value = defined $6 ? $6 : $5;
-    $value = '' if ! defined $value and defined $4;
+    my $tag   = defined $2 ? $2 : $1;
+    my $value = defined $5 ? $5 : $4;
+    $value = '' if ! defined $value and defined $3;
     $value =~ s/\\"/"/g if defined $value;
 
     $tag{ $tag } = $value;
