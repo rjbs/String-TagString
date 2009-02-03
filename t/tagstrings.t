@@ -24,7 +24,7 @@ my @tagstrings = (
 
   [ 'foo baz:"peanut butter\" bar  '  => undef ],
 
-  [ '"foo\\"bar\\\\"' => { 'foo\\"bar\\\\' => undef } ],
+  [ q{"foo\\"bar\\\\"} => { 'foo\\"bar\\\\' => undef } ],
 );
 
 for (@tagstrings) {

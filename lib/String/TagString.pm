@@ -36,7 +36,13 @@ sub tags_from_string {
 
   my $tag_re = qr{
     (?:
-      ((?:@?\pL+)|"(.+?(?<!\\))") # $1 = whole match; $2 = quoted part
+      (
+        (?:@?\pL+)
+        |
+        "(
+          (?:\\\\|\\"|\\[^\\"]|[^\\"])+
+        )"
+      ) # $1 = whole match; $2 = quoted part
     )
     (                             # $3 = entire value, with :
       :
