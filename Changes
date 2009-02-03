@@ -1,5 +1,8 @@
 Revision history for String-TagString
 
+0.002   2009-02-03
+        some quoting and escaping fixes
+
 0.001   2009-02-01
         First version, released on an unsuspecting world.
 

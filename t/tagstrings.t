@@ -49,8 +49,12 @@ my @tags = (
   [ { foo => undef, bar => "peanut butter"        } => 'bar:"peanut butter" foo' ],
 
   [ { 'peanut"butter'   => 'chunky' } => '"peanut\"butter":chunky' ],
-  [ { 'peanut\"butter'  => 'chunky' } => '"peanut\\"butter":chunky' ],
-  [ { 'peanut butter\\' => 'chunky' } => '"peanut butter\\":chunky' ],
+
+  # The input has a slash and a quote, so we expect \\ (slash) then \" (quote)
+  [ { 'peanut\\"butter' => 'lumpy'  } => '"peanut\\\\\"butter":lumpy' ],
+
+  # The literal value ends in a slash, so we need to end in a double slash
+  [ { 'peanut butter\\' => 'creamy' } => '"peanut butter\\\\":creamy' ],
 );
 
 for (@tags) {
