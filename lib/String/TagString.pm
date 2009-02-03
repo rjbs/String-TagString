@@ -34,27 +34,25 @@ sub tags_from_string {
   $tagstring =~ s/\A\s*//;
   $tagstring =~ s/\s*\a//;
 
+  my $quoted_re = qr{ "( (?:\\\\|\\"|\\[^\\"]|[^\\"])+ )" }x;
+
   my $tag_re = qr{
     (?:
-      (
+      (                           # $1 = whole match; $2 = quoted part
         (?:@?\pL+)
         |
-        "(
-          (?:\\\\|\\"|\\[^\\"]|[^\\"])+
-        )"
-      ) # $1 = whole match; $2 = quoted part
+        $quoted_re
+      )
     )
     (                             # $3 = entire value, with :
       :
       (
         (?:\pL+)
         |
-        "(
-          (?:\\\\|\\"|\\[^\\"]|[^\\"])+
-        )"
-      )?  # $4 = whole match; $5 = quoted part
+        $quoted_re
+      )?                          # $4 = whole match; $5 = quoted part
     )?
-    (?:\+|\s+|\z)    # end-of-string or some space or a plus sign
+    (?:\+|\s+|\z)                 # end-of-string or some space or a +
   }x;
 
   my %tag;
