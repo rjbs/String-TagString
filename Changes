@@ -1,5 +1,10 @@
 Revision history for String-TagString
 
+0.003   2010-05-20
+        more documentation
+        disallow undef in arrayref tags
+        disallow tagstrings with multiple contradictory tag entries
+
 0.002   2009-02-03
         some quoting and escaping fixes
 
