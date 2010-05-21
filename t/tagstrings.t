@@ -1,4 +1,4 @@
-#!perl -T
+#!perl
 
 use strict;
 use warnings;
@@ -16,6 +16,11 @@ my @tagstrings = (
   [ 'foo baz: bar'       => { foo => undef, bar => undef, baz => ''       } ],
   [ 'bad()tag foo bar'   => undef ],
   [ 'bad:tag|value foo'  => undef ],
+
+  [ 'foo foo'            => { foo => undef } ],
+  [ 'foo foo:'           => undef ],
+  [ 'foo:1 foo:1'        => { foo => 1     } ],
+  [ 'foo:1 foo:2',       => undef ],
 
   [ 'foo baz:"peanut butter" bar  '  => { foo => undef, bar => undef, baz => 'peanut butter' } ],
   [ 'foo+baz:"peanut butter"+bar  '  => { foo => undef, bar => undef, baz => 'peanut butter' } ],
@@ -42,6 +47,9 @@ for (@tagstrings) {
 my @tags = (
   [ { }                                             => ''                   ],
   [ { foo => undef }                                => 'foo'                ],
+  [ [ ]                                             => ''                   ],
+  [ [ 'foo' ]                                       => 'foo'                ],
+  [ [ undef ]                                       => undef                ],
   [ { foo => undef, bar => undef }                  => 'bar foo'            ],
   [ { foo => undef, bar => undef, baz => undef    } => 'bar baz foo'        ],
   [ { foo => undef, bar => undef, baz => ''       } => 'bar baz: foo'       ],
@@ -58,13 +66,15 @@ my @tags = (
 );
 
 for (@tags) {
-  my ($tags, $expected_string) = @$_;
+  my ($tags, $want) = @$_;
 
   my $string = eval { String::TagString->string_from_tags($tags); };
 
+  my $txt = defined $want ? "<$want>" : '(undef)';
+
   is_deeply(
     $string,
-    $expected_string,
-    "string <$expected_string> from tags",
+    $want,
+    "$txt from tags",
   );
 }

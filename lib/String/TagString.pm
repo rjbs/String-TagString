@@ -16,13 +16,60 @@ our $VERSION = '0.002';
 
 =head1 DESCRIPTION
 
-Quick summary of what the module does.
+String::TagString enables Web 2.0 synergy by deconstructing and synthesizing
+folksonomic nomenclature into structured dynamic programming ontologies.
+
+Also, it parses strings of "tags" into hashrefs, so you can tag whatever junk
+you want with strings.
+
+A set of tags is an unordered set of simple strings, each possibly associated
+with a simple string value.  This library parses strings of these tags into
+hashrefs, and turns hashrefs (or arrayrefs) back into these strings.
+
+This string:
+
+  my $string = q{ beef cheese: peppers:hot };
+
+Turns into this hashref:
+
+  my $tags = {
+    beef    => undef,
+    cheese  => '',
+    peppers => 'hot',
+  };
+
+That hashref, of course, would turn back into the same string -- although
+sorting is not guaranteed.
+
+=head2 Tag String Syntax
+
+Tag strings are space-separated tags.  Tag syntax may change slightly in the
+future, so don't get too attached to any specific quirk, but basically:
+
+A tag is a name, then optionally a colon and value.
+
+Tag names can contains letters, numbers, dots underscores, and dashes.  They
+can't start with a dash, but they can start with an at sign.
+
+A value is similar, but cannot start with an at sign.
+
+Alternately, either a tag or a value can be almost anything if it enclosed in
+double quotes.  (Internal double quotes can be escaped with a backslash.)
 
 =head1 METHODS
 
-=cut
-
 =head2 tags_from_string
+
+  my $tag_hashref = String::TagString->tags_from_string($tag_string);
+
+This will either return a hashref of tags, as described above, or raise an
+exception.  It will raise an exception if the string can't be interpreted, or
+if a tag appears multiple times with conflicting definitions, like in these
+examples:
+
+  foo foo:
+
+  foo:1 foo:2
 
 =cut
 
@@ -59,6 +106,16 @@ sub tags_from_string {
     $value = '' if ! defined $value and defined $3;
     $value =~ s/\\"/"/g if defined $value;
 
+    if (exists $tag{ $tag }) {
+      if (defined $tag{ $tag }) {
+        die "invalid tagstring: conflicting entries for $tag"
+          if (! defined $value) or $value ne $tag{ $tag };
+      } else {
+        die "invalid tagstring: conflicting entries for $tag"
+          if defined $value;
+      }
+    }
+
     $tag{ $tag } = $value;
   }
   
@@ -68,6 +125,14 @@ sub tags_from_string {
 }
 
 =head2 string_from_tags
+
+  my $string = String::TagString->string_from_tags( $tag_set );
+
+This method returns a string representing the given tags.  C<$tag_set> may be
+either a hashref or arrayref.  An arrayref is treated like a hashref in which
+every value is undef.
+
+Tag names and values will only be quoted if needed.
 
 =cut
 
@@ -89,7 +154,12 @@ sub string_from_tags {
   Carp::carp("tagstring must be a hash or array reference")
     unless (ref $tags) and ((ref $tags eq 'HASH') or (ref $tags eq 'ARRAY'));
 
-  $tags = { map { $_ => undef } @$tags } if ref $tags eq 'ARRAY';
+  if (ref $tags eq 'ARRAY') {
+    Carp::croak("undefined tag name in array reference")
+      if grep { ! defined } @$tags;
+
+    $tags = { map { $_ => undef } @$tags };
+  }
 
   my @tags;
   for my $name (sort keys %$tags) {
