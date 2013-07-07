@@ -1,5 +1,8 @@
 Revision history for String-TagString
 
+{{$NEXT}}
+        repackage, update bugtracker and repo
+
 0.003   2010-05-20
         more documentation
         disallow undef in arrayref tags
