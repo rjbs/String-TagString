@@ -2,7 +2,6 @@ use warnings;
 use strict;
 package String::TagString;
 # ABSTRACT: parse and emit tag strings (including tags with values)
-our $VERSION = '0.003';
 
 =head1 SYNOPSIS
 
