@@ -1,6 +1,8 @@
 Revision history for String-TagString
 
 {{$NEXT}}
+
+0.006     2022-12-31 15:48:03-05:00 America/New_York
         - update packaging and metadata
         - minimum required Perl is now v5.12
 
